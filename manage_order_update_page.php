@@ -1,0 +1,137 @@
+
+
+
+<?php
+        $root = $_SERVER['DOCUMENT_ROOT'];
+        include("$root" . "/Dias-Design-bulma/root_credentials.php");
+?>
+
+<?php
+$order_id = filter_var($_GET['order_id'],FILTER_VALIDATE_INT); // coming from a hidden field on manage_order_page.php, not needing user input
+
+if(isset($order_id)){
+    $sql = "SELECT * FROM Orders WHERE OrderID = $order_id;";
+    $fetch = $conn ->query($sql);
+    $order_info = $fetch->fetchAll(PDO::FETCH_ASSOC);
+    $items_orderID = $order_info[0]["ProductID"];
+    $quantity =  $order_info[0]["quantity"];
+    $order_total = $order_info[0]["total_cost"];
+    $user_id = $order_info[0]["UserID"];
+    $status =  $order_info[0]["status"];
+    
+}
+else{
+    echo "<h1>There was an issue in selecting the order</h1>";
+}
+    // receives customer name 
+    function get_customer_name($user_id){
+        $root = $_SERVER['DOCUMENT_ROOT'];
+        include("$root" . "/Dias-Design-bulma/root_credentials.php");
+
+        $name =$conn->query("SELECT Fname,Lname FROM Users WHERE UserID = $user_id;");
+        $names_fetched = $name->fetchAll(PDO::FETCH_ASSOC);
+        return $names_fetched[0]["Fname"]. " ".$names_fetched[0]["Lname"];
+
+
+    }
+    // receives customer email 
+    function get_customer_email($user_id){
+        $root = $_SERVER['DOCUMENT_ROOT'];
+        include("$root" . "/Dias-Design-bulma/root_credentials.php");
+
+        $email =$conn->query("SELECT email FROM Users WHERE UserID = $user_id;");
+        $email_fetched = $email->fetchAll(PDO::FETCH_ASSOC);
+        return $email_fetched[0]["email"];
+
+
+    }
+    //gets product name 
+    function get_item_ordered($product_id){
+        $root = $_SERVER['DOCUMENT_ROOT'];
+        include("$root" . "/Dias-Design-bulma/root_credentials.php");
+
+        $product =$conn->query("SELECT Title FROM Products WHERE ProductID = $product_id;");
+        $product_fetched = $product->fetchAll(PDO::FETCH_ASSOC);
+        return $product_fetched[0]["Title"];
+    }
+
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css"> <!-- link for access to bulma api for page design-->
+
+    <title>Order Update Page</title> <!--displays management order page-->
+</head>
+<body>
+    <?php include('head.php') ?>
+
+    <h1 class="title">Update Order</h1>
+
+    <!-- Populated  the order details of a particular order -->
+    <div>
+        <p>Order ID: <?=$order_id?></p> <br>
+    </div>
+
+    <div class="">
+        <p>Customer Name: <?=get_customer_name($user_id)?></p> <br>
+    </div>
+
+    <div class="">
+        <p>Customer email: <?=get_customer_email($user_id)?></p> <br>
+    </div>
+
+    <div class="">
+        <p>Item Ordered: <?=get_item_ordered($items_orderID)?></p> <br>
+    </div>
+    <div class="">
+        <p>Quantity: <?=$quantity?></p> <br>
+    </div>
+
+    <div class="">
+        <p>Order Total: $ <?=$order_total?></p> <br>
+    </div>
+
+    <div> <!--The different options for updating order status -->
+        <form action="Manage Orders/manage_order_update_service.php" method="POST">
+
+                <div class="field">
+                    <label class = "label">Status</label>
+                    <div class="control">
+                        <div class="select">
+                            <select  name="status" id="status">
+                                <!-- It pre-selects the current status of the order -->
+                                <option <?php if($status == 'Pending'){echo(" selected ");}?> value="Pending">Pending</option>
+                                <option <?php if($status == 'Started'){echo(" selected ");}?> value="Started">Started</option>
+                                <option <?php if($status == 'Paid'){echo(" selected ");}?> value="Paid">Paid</option>
+                                <option <?php if($status == 'In Progress'){echo(" selected ");}?> value="In Progress">In Progress</option>
+                                <option <?php if($status == 'Completed'){echo(" selected ");}?> value="Completed">Completed</option>
+                                <option <?php if($status == 'Out-for-Delivery'){echo(" selected ");}?> value="Out-for-Delivery">Out-for-Delivery</option>
+                                <option <?php if($status == 'Delivered'){echo(" selected ");}?> value="Delivered">Delivered</option>
+                                <option <?php if($status == 'Cancelled'){echo(" selected ");}?> value="Cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+
+            <div class="field">
+                <div class="control">
+                    <button class="button is-link">Submit</button>
+                </div>
+            </div>
+
+            <input type="hidden" name="order_ID" value="<?=$order_id?>">
+
+        </form>
+    </div>
+</body>
+</html>
+
+
+
+
